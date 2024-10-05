@@ -1,11 +1,9 @@
-import { useState } from 'react';
+import PaperTrader from "./components/paperTrader";
 
 function App() {
-  const [state, setState] = useState<string>(''); 
 
   return (
     <>
-      
     </>
   );
 }
