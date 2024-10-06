@@ -1,10 +1,11 @@
 import React, { useState, useRef } from 'react';
 import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai';
+import { div } from 'framer-motion/client';
 
 // Initialize Gemini AI
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 // API Keys
-const ASSEMBLY_AI_KEY = import.meta.env.VITE_ASSEMBLY_AI_KEY;
+const LEMON_FOX_API_KEY = import.meta.env.VITE_LEMON_FOX_API_KEY;
 const VOICE_RSS_API_KEY = import.meta.env.VITE_VOICE_RSS_API_KEY;
 
 interface Message {
@@ -50,68 +51,68 @@ const Chat: React.FC = () => {
 
   const transcribeAudio = async (audioBlob: Blob) => {
     const formData = new FormData();
-    formData.append('audio', audioBlob, 'recording.wav');
+    formData.append('file', audioBlob, 'recording.wav');
+    formData.append('language', 'english');
+    formData.append('response_format', 'json');
 
     try {
-      const response = await fetch('https://api.assemblyai.com/v2/upload', {
+      console.log('Sending request to Lemon Fox API...');
+      const response = await fetch('https://api.lemonfox.ai/v1/audio/transcriptions', {
         method: 'POST',
         headers: {
-          'Authorization': ASSEMBLY_AI_KEY
+          'Authorization': `Bearer ${LEMON_FOX_API_KEY}`
         },
         body: formData
       });
 
-      if (!response.ok) throw new Error('Upload failed');
-      const uploadResult = await response.json();
+      console.log('Response status:', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Transcription failed: ${response.status} ${response.statusText}\n${errorText}`);
+      }
 
-      const transcriptResponse = await fetch('https://api.assemblyai.com/v2/transcript', {
-        method: 'POST',
-        headers: {
-          'Authorization': ASSEMBLY_AI_KEY,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ audio_url: uploadResult.upload_url })
-      });
-
-      if (!transcriptResponse.ok) throw new Error('Transcription failed');
-      const transcriptResult = await transcriptResponse.json();
-
-      // Poll for transcription completion
-      const pollingInterval = setInterval(async () => {
-        const pollingResponse = await fetch(`https://api.assemblyai.com/v2/transcript/${transcriptResult.id}`, {
-          headers: { 'Authorization': ASSEMBLY_AI_KEY }
-        });
-        const pollingResult = await pollingResponse.json();
-
-        if (pollingResult.status === 'completed') {
-          clearInterval(pollingInterval);
-          setInputText(pollingResult.text);
-        } else if (pollingResult.status === 'error') {
-          clearInterval(pollingInterval);
-          console.error('Transcription error:', pollingResult.error);
-        }
-      }, 3000);
+      const result = await response.json();
+      console.log('Transcription result:', result);
+      
+      if (result.text) {
+        setInputText(result.text);
+        handleSendMessage(result.text);  // Automatically send the transcribed text
+      } else {
+        console.error('No transcription returned');
+      }
     } catch (error) {
       console.error('Error transcribing audio:', error);
+      if (error instanceof Error) {
+        console.error('Error details:', error.message);
+      }
     }
   };
 
-  const handleSendMessage = async () => {
-    if (!inputText.trim()) return;
+  const processGeminiResponse = (text: string): string => {
+    let processed = text.replace(/\*\*/g, '').replace(/\n/g, ' ').trim();
+    processed = processed.replace(/(Definition:|Functions of Money:|Forms of Money:|Types of Monetary Systems:)/g, '');
+    const sentences = processed.split(/\.(?=\s|$)/).filter(s => s.trim().length > 0);
+    const conciseSentences = sentences.slice(0, 3);
+    return conciseSentences.join('. ') + '.';
+  };
 
-    const userMessage: Message = { text: inputText, sender: 'user' };
+  const handleSendMessage = async (text: string = inputText) => {
+    if (!text.trim()) return;
+
+    const userMessage: Message = { text: text, sender: 'user' };
     setMessages(prev => [...prev, userMessage]);
     setInputText('');
 
     try {
       const model: GenerativeModel = genAI.getGenerativeModel({ model: "gemini-pro" });
-      const result = await model.generateContent(inputText);
+      const result = await model.generateContent(text);
       const response = await result.response;
-      const botMessage: Message = { text: response.text(), sender: 'bot' };
+      const processedResponse = processGeminiResponse(response.text());
+      const botMessage: Message = { text: processedResponse, sender: 'bot' };
       setMessages(prev => [...prev, botMessage]);
 
-      // Speak the bot's response
-      speakText(botMessage.text);
+      speakText(processedResponse);
     } catch (error) {
       console.error('Error generating response:', error);
     }
@@ -131,8 +132,10 @@ const Chat: React.FC = () => {
     }
   };
 
-  return (
+return (
+    <>
     <div className="chatbot-container">
+        <h1 className="chatbot-title">Centsify AI</h1>
       <div className="messages-container">
         {messages.map((message, index) => (
           <div key={index} className={`message ${message.sender}`}>
@@ -145,14 +148,19 @@ const Chat: React.FC = () => {
           type="text"
           value={inputText}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInputText(e.target.value)}
+          onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
           placeholder="Type your message..."
+          className="input-field"
         />
-        <button onClick={isRecording ? stopRecording : startRecording}>
-          {isRecording ? 'Stop Recording' : 'Start Recording'}
+        <button 
+          onClick={isRecording ? stopRecording : startRecording}
+          className={`record-button ${isRecording ? 'recording' : ''}`}
+        >
+          {isRecording ? 'Stop' : 'Record'}
         </button>
-        <button onClick={handleSendMessage}>Send</button>
       </div>
     </div>
+    </>
   );
 };
 

@@ -7,6 +7,7 @@ import Dashboard from './components/Dashboard';
 import PrivateRoute from './components/PrivateRoute';
 import PaperTrader from './components/paperTrader';
 import Chat from './components/Chat';
+import Roadmap from './components/Roadmap';
 
 const App: React.FC = () => {
   return (
@@ -34,6 +35,7 @@ const App: React.FC = () => {
            <Route path="/papertrade" element={<PaperTrader />} />
 
            <Route path="/chat" element={<Chat />} />
+           <Route path="/roadmap" element={<Roadmap />} />
            
         </Routes>
       </Router>
