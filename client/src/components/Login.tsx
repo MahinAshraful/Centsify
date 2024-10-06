@@ -131,6 +131,14 @@ const Login: React.FC = () => {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               className="login-input"
+              style={{
+                width: '100%',          // Make inputs take the full width of their container
+                padding: '10px',       // Add padding for better touch targets
+                border: '1px solid #ccc', // Set a border color
+                borderRadius: '5px',   // Slightly round the corners
+                marginBottom: '16px',  // Add space between inputs
+                fontSize: '16px'       // Adjust font size for better readability
+            }}
               required
             />
             <input
@@ -139,6 +147,14 @@ const Login: React.FC = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="login-input"
+              style={{
+                width: '100%',          // Make inputs take the full width of their container
+                padding: '10px',       // Add padding for better touch targets
+                border: '1px solid #ccc', // Set a border color
+                borderRadius: '5px',   // Slightly round the corners
+                marginBottom: '16px',  // Add space between inputs
+                fontSize: '16px'       // Adjust font size for better readability
+            }}
               required
             />
             <button type="submit" className="login-button">
