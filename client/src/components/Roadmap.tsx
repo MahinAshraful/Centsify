@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TrendingUp, MessageSquare, TrendingUpIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button, } from './ui/button';
 import { Dialog, DialogFooter, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { CheckCircle, XCircle } from 'lucide-react';
 
-// Type definitions
 type Topic = {
   id: number;
   name: string;
@@ -31,6 +30,11 @@ type QuizModalProps = {
   isOpen: boolean;
   onClose: () => void;
   topic: Topic;
+  onQuizComplete: (topicId: number) => void;
+};
+
+type Quizzes = {
+  [key: string]: Question[];
 };
 
 const colorMap: ColorMap = {
@@ -184,9 +188,6 @@ const topics: Topic[] = [
   }
 ];
 
-type Quizzes = {
-  [key: string]: Question[];
-};
 
 
 const quizzes: Quizzes = {
@@ -475,7 +476,7 @@ const quizzes: Quizzes = {
 };
 
 
-const QuizModal: React.FC<QuizModalProps> = ({ isOpen, onClose, topic }) => {
+const QuizModal: React.FC<QuizModalProps> = ({ isOpen, onClose, topic, onQuizComplete }) => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [score, setScore] = useState(0);
   const [showScore, setShowScore] = useState(false);
@@ -483,6 +484,11 @@ const QuizModal: React.FC<QuizModalProps> = ({ isOpen, onClose, topic }) => {
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
 
   const questions: Question[] = quizzes[topic.name] || [];
+
+  const handleQuizCompletion = () => {
+    setShowScore(true);
+    onQuizComplete(topic.id);
+  };
 
   const handleAnswerOptionClick = (index: number, isCorrect: boolean) => {
     setSelectedAnswer(index);
@@ -499,7 +505,7 @@ const QuizModal: React.FC<QuizModalProps> = ({ isOpen, onClose, topic }) => {
         setSelectedAnswer(null);
         setIsCorrect(null);
       } else {
-        setShowScore(true);
+        handleQuizCompletion();
       }
     }, 1000);
   };
@@ -511,6 +517,7 @@ const QuizModal: React.FC<QuizModalProps> = ({ isOpen, onClose, topic }) => {
     setSelectedAnswer(null);
     setIsCorrect(null);
   };
+
 
   if (questions.length === 0) {
     return (
@@ -587,9 +594,35 @@ const QuizModal: React.FC<QuizModalProps> = ({ isOpen, onClose, topic }) => {
 const Roadmap: React.FC = () => {
   const [hoveredTopic, setHoveredTopic] = useState<Topic | null>(null);
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
+  const [completedTopics, setCompletedTopics] = useState<number[]>([]);
+
+  useEffect(() => {
+    const savedCompletedTopics = localStorage.getItem('completedTopics');
+    if (savedCompletedTopics) {
+      setCompletedTopics(JSON.parse(savedCompletedTopics));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('completedTopics', JSON.stringify(completedTopics));
+  }, [completedTopics]);
 
   const handleTopicClick = (topic: Topic) => {
-    setSelectedTopic(topic);
+    if (isTopicUnlocked(topic.id)) {
+      setSelectedTopic(topic);
+    }
+  };
+
+  const isTopicUnlocked = (topicId: number) => {
+    if (topicId === 1) return true; // First topic is always unlocked
+    return completedTopics.includes(topicId - 1);
+  };
+
+  const handleQuizCompletion = (topicId: number) => {
+    if (!completedTopics.includes(topicId)) {
+      setCompletedTopics([...completedTopics, topicId]);
+    }
+    setSelectedTopic(null);
   };
 
   return (
@@ -649,13 +682,18 @@ const Roadmap: React.FC = () => {
           {topics.map((topic) => (
             <div 
               key={topic.id} 
-              className={`absolute ${topic.color} text-white w-[20rem] h-[10rem] text-4xl flex justify-center items-center rounded-full py-3 px-6 text-center cursor-pointer p-4`} 
+              className={`absolute ${topic.color} text-white w-[20rem] h-[10rem] text-4xl flex justify-center items-center rounded-full py-3 px-6 text-center cursor-pointer p-4 ${
+                isTopicUnlocked(topic.id) ? 'opacity-100' : 'opacity-50 cursor-not-allowed'
+              }`} 
               style={{ left: `calc(50% + ${topic.x - 500}px)`, top: `${topic.y}px` }}
               onMouseEnter={() => setHoveredTopic(topic)}
               onMouseLeave={() => setHoveredTopic(null)}
               onClick={() => handleTopicClick(topic)}
             >
               {topic.name}
+              {completedTopics.includes(topic.id) && (
+                <CheckCircle className="absolute top-2 right-2 text-green-300" size={24} />
+              )}
             </div>
           ))}
 
@@ -671,6 +709,9 @@ const Roadmap: React.FC = () => {
             >
               <h3 className="text-xl font-semibold mb-2">{hoveredTopic.name}</h3>
               <p className="text-sm">{hoveredTopic.des}</p>
+              {!isTopicUnlocked(hoveredTopic.id) && (
+                <p className="text-sm mt-2 text-red-500">Complete the previous topic to unlock this one.</p>
+              )}
             </div>
           )}
 
@@ -679,6 +720,7 @@ const Roadmap: React.FC = () => {
               isOpen={!!selectedTopic}
               onClose={() => setSelectedTopic(null)}
               topic={selectedTopic}
+              onQuizComplete={handleQuizCompletion}
             />
           )}
         </div>
