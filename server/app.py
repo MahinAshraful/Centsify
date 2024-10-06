@@ -1,45 +1,123 @@
-from flask import Flask, jsonify
-from flask_cors import CORS
+from flask import Flask, request, jsonify
+from atlas import AtlasClient
+from os import environ as env
 from dotenv import load_dotenv
-import os
-from db import init_db
-from routes import register_routes
-from auth import AuthError, requires_auth, get_token_auth_header, get_user_info
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+from email_validator import validate_email, EmailNotValidError
+from bson import ObjectId 
 
 load_dotenv()
 
-def create_app():
-    app = Flask(__name__)
-    CORS(app)
-    app.config['SECRET_KEY'] = os.getenv('CLIENT_SECRET')
-    app.config['DEBUG'] = True  # Set to False in production
-    app.db = init_db()
+app = Flask(__name__)
+app.config['JWT_SECRET_KEY'] = env.get('JWT_SECRET_KEY', 'your-secret-key')  # Change this!
+jwt = JWTManager(app)
 
-    register_routes(app)
+atlas_client = AtlasClient(env.get('ATLAS_URI'), "users")
 
-    @app.errorhandler(AuthError)
-    def handle_auth_error(ex):
-        response = jsonify(ex.error)
-        response.status_code = ex.status_code
-        return response
+def validate_user_input(data):
+    errors = []
+    if 'username' not in data or not data['username']:
+        errors.append("username is required")
+    if 'email' not in data or not data['email']:
+        errors.append("email is required")
+    else:
+        try:
+            validate_email(data['email'])
+        except EmailNotValidError:
+            errors.append("Invalid email format")
+    if 'password' not in data or not data['password']:
+        errors.append("password is required")
+    elif len(data['password']) < 8:
+        errors.append("password must be at least 8 characters long")
+    return errors
 
-    @app.route('/api/user', methods=['GET'])
-    @requires_auth
-    def get_current_user():
-        token = get_token_auth_header()
-        user_info = get_user_info(token)
-        user = app.db.info.find_one({'auth0_id': user_info['auth0_id']})
-        if not user:
-            # Create user if not exists
-            result = app.db.info.insert_one(user_info)
-            user_info['_id'] = str(result.inserted_id)
-            return jsonify(user_info), 201
-        user['_id'] = str(user['_id'])
-        return jsonify(user), 200
+@app.route('/')
+def index():
+    return jsonify({"message": "Welcome to the API. Available endpoints: /api/register, /api/login, /api/user"}), 200
 
-    return app
+@app.route('/api/register', methods=['POST'])
+def register_user():
+    user_data = request.json
+    
+    errors = validate_user_input(user_data)
+    if errors:
+        return jsonify({"errors": errors}), 400
 
-app = create_app()
+    users_collection = atlas_client.get_collection('info')
+    
+    # Check for existing user
+    existing_user = users_collection.find_one({'$or': [{'username': user_data['username']}, {'email': user_data['email']}]})
+    
+    if existing_user:
+        return jsonify({"message": "Username or email already exists"}), 400
+
+    # Generate a unique user ID
+    user_id = str(ObjectId())
+    
+    hashed_password = generate_password_hash(user_data['password'])
+    new_user = {
+        '_id': user_id,  # Store the generated user_id
+        'username': user_data['username'],
+        'email': user_data['email'],
+        'password': hashed_password
+    }
+
+    new_user_id = atlas_client.insert_one('info', new_user)
+    
+    return jsonify({"message": "User registered successfully", "user_id": user_id}), 201
+
+@app.route('/api/login', methods=['POST'])
+def login():
+    login_data = request.json
+    if not login_data or 'username' not in login_data or 'password' not in login_data:
+        return jsonify({"message": "Missing username or password"}), 400
+
+    user = atlas_client.find('info', {'username': login_data['username']}, limit=1)
+    if not user or not check_password_hash(user[0]['password'], login_data['password']):
+        return jsonify({"message": "Invalid username or password"}), 401
+
+    access_token = create_access_token(identity=str(user[0]['_id']))
+    return jsonify(access_token=access_token), 200
+
+# @app.route('/api/user', methods=['GET'])
+# @jwt_required()
+# def get_user():
+#     current_user_id = get_jwt_identity()
+#     user = atlas_client.find('info', {'_id': current_user_id}, limit=1)
+#     if user:
+#         user_data = user[0]
+#         del user_data['password']  # Don't send the password hash
+#         return jsonify(user_data), 200
+#     return jsonify({"message": "User not found"}), 404
+
+@app.route('/api/user/<user_id>', methods=['GET'])
+@jwt_required()
+def get_user(user_id):
+    user = atlas_client.find('info', {'_id': user_id}, limit=1)
+    if user:
+        user_data = user[0]
+        del user_data['password']  # Don't send the password hash
+        return jsonify(user_data), 200
+    return jsonify({"message": "User not found"}), 40
+
+@app.route('/api/user', methods=['PUT'])
+@jwt_required()
+def update_user():
+    current_user_id = get_jwt_identity()
+    update_data = request.json
+
+    errors = validate_user_input(update_data)
+    if errors:
+        return jsonify({"errors": errors}), 400
+
+    if 'password' in update_data:
+        update_data['password'] = generate_password_hash(update_data['password'])
+
+    result = atlas_client.update_one('info', {'_id': current_user_id}, {'$set': update_data})
+    if result:
+        return jsonify({"message": "User updated successfully"}), 200
+    return jsonify({"message": "User not found"}), 404
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5000)))
+    app.run(debug=True)
