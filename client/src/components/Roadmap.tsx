@@ -153,7 +153,7 @@ const topics = [
 ];
 
 
-const FinancialLearningPath = () => {
+const Roadmap = () => {
   const [hoveredTopic, setHoveredTopic] = useState<{ id: number; name: string; color: string; x: number; y: number; des: string } | null>(null);
 
   return (
@@ -239,4 +239,4 @@ const FinancialLearningPath = () => {
   );
 };
 
-export default FinancialLearningPath;
+export default Roadmap;
