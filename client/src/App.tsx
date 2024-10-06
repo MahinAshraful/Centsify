@@ -5,6 +5,7 @@ import Login from './components/Login';
 import Signup from './components/Signup';
 import Dashboard from './components/Dashboard';
 import PrivateRoute from './components/PrivateRoute';
+import PaperTrader from './components/paperTrader';
 
 const App: React.FC = () => {
   return (
@@ -29,6 +30,7 @@ const App: React.FC = () => {
             }
           />
           <Route path="/" element={<Navigate to="/login" replace />} />
+           <Route path="/papertrade" element={<PaperTrader />} />
         </Routes>
       </Router>
     </Auth0Provider>

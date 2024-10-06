@@ -4,7 +4,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 
-const API_KEY = 'YOUR_ALPHA_VANTAGE_API_KEY'; // Replace with your actual API key
+const API_KEY = import.meta.env.VITE_ALPHA_VANTAGE_KEY;
 
 interface Portfolio {
   [key: string]: number;
