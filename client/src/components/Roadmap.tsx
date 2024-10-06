@@ -164,7 +164,7 @@ const Roadmap = () => {
             <div className="bg-green-700 text-white rounded-full p-3 mr-2">
               <TrendingUp size={32} />
             </div>
-            <h1 className="text-3xl font-bold text-gray-800">Centisify</h1>
+            <h1 className="text-3xl font-bold text-gray-800">Centsify</h1>
           </div>
           <div className="flex items-center">
             <p className="mr-4 text-purple-700 text-3xl">Hello, Tanvir</p>
