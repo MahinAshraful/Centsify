@@ -489,3 +489,102 @@ body{
     background-color: #cccccc;
     cursor: not-allowed;
 }
+
+.chatbot-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.messages-container {
+    width: 100%;
+    max-width: 800px;
+    height: 70vh;
+    overflow-y: auto;
+    margin-bottom: 20px;
+    padding: 20px;
+    background-color: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.message {
+    margin-bottom: 20px;
+    padding: 15px;
+    border-radius: 10px;
+    font-size: 1.2em;
+    line-height: 1.4;
+}
+
+.message.user {
+    background-color: #e3f2fd;
+    text-align: right;
+}
+
+.message.bot {
+    background-color: #f3e5f5;
+}
+
+.input-container {
+    display: flex;
+    width: 100%;
+    max-width: 800px;
+}
+
+.input-field {
+    flex-grow: 1;
+    padding: 15px;
+    font-size: 1.2em;
+    border: none;
+    border-radius: 10px 0 0 10px;
+    outline: none;
+}
+
+.record-button {
+    padding: 15px 30px;
+    font-size: 1.2em;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 0 10px 10px 0;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.record-button:hover {
+    background-color: #45a049;
+}
+
+.record-button.recording {
+    background-color: #f44336;
+}
+
+.record-button.recording:hover {
+    background-color: #d32f2f;
+}
+
+@media (max-width: 600px) {
+    .messages-container {
+        height: 60vh;
+    }
+
+    .message,
+    .input-field,
+    .record-button {
+        font-size: 1em;
+    }
+}
+
+.chatbot-title {
+    font-size: 3em;
+    color: #2c3e50;
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
