@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { TrendingUp, MessageSquare, TrendingUpIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { Button, } from './ui/button';
+import { Dialog, DialogFooter, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
+import { CheckCircle, XCircle } from 'lucide-react';
 
 // Type definitions
 type Topic = {
@@ -14,6 +17,20 @@ type Topic = {
 
 type ColorMap = {
   [key: string]: string;
+};
+
+type Question = {
+  questionText: string;
+  answerOptions: {
+    answerText: string;
+    isCorrect: boolean;
+  }[];
+};
+
+type QuizModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  topic: Topic;
 };
 
 const colorMap: ColorMap = {
@@ -34,6 +51,7 @@ const colorMap: ColorMap = {
   'bg-rose-500': 'bg-rose-300',
   'bg-black': 'bg-gray-400',
 };
+
 
 const topics: Topic[] = [
   { 
@@ -166,8 +184,413 @@ const topics: Topic[] = [
   }
 ];
 
+type Quizzes = {
+  [key: string]: Question[];
+};
+
+
+const quizzes: Quizzes = {
+  'Budgeting': [
+    {
+      questionText: "What is the primary purpose of creating a budget?",
+      answerOptions: [
+        { answerText: "To restrict spending", isCorrect: false },
+        { answerText: "To track income and expenses", isCorrect: true },
+        { answerText: "To increase debt", isCorrect: false },
+        { answerText: "To impress others", isCorrect: false }
+      ]
+    },
+    {
+      questionText: "Which of the following is NOT typically included in a personal budget?",
+      answerOptions: [
+        { answerText: "Rent/Mortgage", isCorrect: false },
+        { answerText: "Groceries", isCorrect: false },
+        { answerText: "Stock market predictions", isCorrect: true },
+        { answerText: "Utilities", isCorrect: false }
+      ]
+    },
+    // Additional questions for Budgeting...
+  ],
+  'Saving Strategies': [
+    {
+      questionText: "What is the '50/30/20' budgeting rule?",
+      answerOptions: [
+        { answerText: "50% needs, 30% wants, 20% savings", isCorrect: true },
+        { answerText: "50% savings, 30% needs, 20% wants", isCorrect: false },
+        { answerText: "50% wants, 30% needs, 20% savings", isCorrect: false },
+        { answerText: "50% needs, 30% savings, 20% wants", isCorrect: false }
+      ]
+    },
+    {
+      questionText: "Which saving strategy involves automatically transferring money to savings?",
+      answerOptions: [
+        { answerText: "Manual saving", isCorrect: false },
+        { answerText: "Impulse saving", isCorrect: false },
+        { answerText: "Automated saving", isCorrect: true },
+        { answerText: "Delayed saving", isCorrect: false }
+      ]
+    },
+    // Additional questions for Saving Strategies...
+  ],
+  'Credit Scores and Reports': [
+    {
+      questionText: "What is a credit score used for?",
+      answerOptions: [
+        { answerText: "To calculate savings", isCorrect: false },
+        { answerText: "To determine loan eligibility", isCorrect: true },
+        { answerText: "To predict future spending", isCorrect: false },
+        { answerText: "To track bank account balances", isCorrect: false }
+      ]
+    },
+    {
+      questionText: "Which of the following is NOT a factor in calculating credit scores?",
+      answerOptions: [
+        { answerText: "Payment history", isCorrect: false },
+        { answerText: "Length of credit history", isCorrect: false },
+        { answerText: "Age", isCorrect: true },
+        { answerText: "Types of credit", isCorrect: false }
+      ]
+    }
+  ],
+  'Understanding Interest Rates': [
+    {
+      questionText: "What is the difference between fixed and variable interest rates?",
+      answerOptions: [
+        { answerText: "Fixed rates never change, variable rates can fluctuate", isCorrect: true },
+        { answerText: "Variable rates are always lower", isCorrect: false },
+        { answerText: "Fixed rates are unpredictable", isCorrect: false },
+        { answerText: "Variable rates never change", isCorrect: false }
+      ]
+    },
+    {
+      questionText: "What is an APR?",
+      answerOptions: [
+        { answerText: "Annual Payment Rate", isCorrect: false },
+        { answerText: "Average Principal Rate", isCorrect: false },
+        { answerText: "Annual Percentage Rate", isCorrect: true },
+        { answerText: "Annual Purchase Rate", isCorrect: false }
+      ]
+    }
+  ],
+  'Types of Bank Accounts': [
+    {
+      questionText: "Which type of account typically earns more interest?",
+      answerOptions: [
+        { answerText: "Checking account", isCorrect: false },
+        { answerText: "Savings account", isCorrect: true },
+        { answerText: "Credit card account", isCorrect: false },
+        { answerText: "Mortgage account", isCorrect: false }
+      ]
+    },
+    {
+      questionText: "Which account type is best for everyday transactions?",
+      answerOptions: [
+        { answerText: "Money market account", isCorrect: false },
+        { answerText: "Certificate of deposit", isCorrect: false },
+        { answerText: "Checking account", isCorrect: true },
+        { answerText: "Savings account", isCorrect: false }
+      ]
+    }
+  ],
+  'Debt Management': [
+    {
+      questionText: "Which is the best way to manage multiple debts?",
+      answerOptions: [
+        { answerText: "Ignore the debts", isCorrect: false },
+        { answerText: "Pay the minimum on all debts", isCorrect: false },
+        { answerText: "Focus on paying off high-interest debts first", isCorrect: true },
+        { answerText: "Take out more loans to pay debts", isCorrect: false }
+      ]
+    },
+    {
+      questionText: "What is debt consolidation?",
+      answerOptions: [
+        { answerText: "Borrowing money to increase savings", isCorrect: false },
+        { answerText: "Combining multiple debts into one loan", isCorrect: true },
+        { answerText: "Opening new credit cards", isCorrect: false },
+        { answerText: "Ignoring creditors", isCorrect: false }
+      ]
+    }
+  ],
+  'Taxes': [
+    {
+      questionText: "What is the purpose of filing a tax return?",
+      answerOptions: [
+        { answerText: "To apply for a loan", isCorrect: false },
+        { answerText: "To report income and taxes paid", isCorrect: true },
+        { answerText: "To increase credit score", isCorrect: false },
+        { answerText: "To decrease interest rates", isCorrect: false }
+      ]
+    },
+    {
+      questionText: "Which of the following is a tax deduction?",
+      answerOptions: [
+        { answerText: "Health insurance premiums", isCorrect: true },
+        { answerText: "Grocery expenses", isCorrect: false },
+        { answerText: "Entertainment expenses", isCorrect: false },
+        { answerText: "Vacation costs", isCorrect: false }
+      ]
+    }
+  ],
+  'Creating Emergency Fund': [
+    {
+      questionText: "What is the recommended amount for an emergency fund?",
+      answerOptions: [
+        { answerText: "1 month of living expenses", isCorrect: false },
+        { answerText: "3-6 months of living expenses", isCorrect: true },
+        { answerText: "12 months of salary", isCorrect: false },
+        { answerText: "No emergency fund is necessary", isCorrect: false }
+      ]
+    },
+    {
+      questionText: "Why is having an emergency fund important?",
+      answerOptions: [
+        { answerText: "To pay for vacations", isCorrect: false },
+        { answerText: "To handle unexpected financial setbacks", isCorrect: true },
+        { answerText: "To invest in stocks", isCorrect: false },
+        { answerText: "To increase credit score", isCorrect: false }
+      ]
+    }
+  ],
+  'Retirement Accounts': [
+    {
+      questionText: "What is a 401(k)?",
+      answerOptions: [
+        { answerText: "A savings account", isCorrect: false },
+        { answerText: "An employer-sponsored retirement plan", isCorrect: true },
+        { answerText: "A government loan program", isCorrect: false },
+        { answerText: "An insurance policy", isCorrect: false }
+      ]
+    },
+    {
+      questionText: "At what age can you start withdrawing from an IRA without penalty?",
+      answerOptions: [
+        { answerText: "50", isCorrect: false },
+        { answerText: "59 1/2", isCorrect: true },
+        { answerText: "65", isCorrect: false },
+        { answerText: "70", isCorrect: false }
+      ]
+    }
+  ],
+  'Insurance Basics': [
+    {
+      questionText: "Which type of insurance covers medical expenses?",
+      answerOptions: [
+        { answerText: "Life insurance", isCorrect: false },
+        { answerText: "Health insurance", isCorrect: true },
+        { answerText: "Home insurance", isCorrect: false },
+        { answerText: "Auto insurance", isCorrect: false }
+      ]
+    },
+    {
+      questionText: "What does renters insurance cover?",
+      answerOptions: [
+        { answerText: "Life insurance", isCorrect: false },
+        { answerText: "Personal property in a rented space", isCorrect: true },
+        { answerText: "Car damage", isCorrect: false },
+        { answerText: "Health issues", isCorrect: false }
+      ]
+    }
+  ],
+  'Compound Interest': [
+    {
+      questionText: "What is compound interest?",
+      answerOptions: [
+        { answerText: "Interest earned only on the initial amount", isCorrect: false },
+        { answerText: "Interest earned on both the principal and interest accumulated", isCorrect: true },
+        { answerText: "A type of loan", isCorrect: false },
+        { answerText: "A method to avoid interest", isCorrect: false }
+      ]
+    },
+    {
+      questionText: "Which of the following grows the fastest with compound interest?",
+      answerOptions: [
+        { answerText: "Simple interest", isCorrect: false },
+        { answerText: "Compound interest", isCorrect: true },
+        { answerText: "No interest", isCorrect: false },
+        { answerText: "Loan interest", isCorrect: false }
+      ]
+    }
+  ],
+  'Investing Basics': [
+    {
+      questionText: "Which of the following is a low-risk investment?",
+      answerOptions: [
+        { answerText: "Stocks", isCorrect: false },
+        { answerText: "Bonds", isCorrect: true },
+        { answerText: "Cryptocurrency", isCorrect: false },
+        { answerText: "Real estate", isCorrect: false }
+      ]
+    },
+    {
+      questionText: "What does 'diversification' mean in investing?",
+      answerOptions: [
+        { answerText: "Investing in a single stock", isCorrect: false },
+        { answerText: "Spreading investments across different assets", isCorrect: true },
+        { answerText: "Only investing in bonds", isCorrect: false },
+        { answerText: "Avoiding all risky investments", isCorrect: false }
+      ]
+    }
+  ],
+  'Mortgages': [
+    {
+      questionText: "What is a mortgage?",
+      answerOptions: [
+        { answerText: "A type of credit card", isCorrect: false },
+        { answerText: "A loan used to buy a home", isCorrect: true },
+        { answerText: "An investment plan", isCorrect: false },
+        { answerText: "A retirement account", isCorrect: false }
+      ]
+    },
+    {
+      questionText: "What is a down payment?",
+      answerOptions: [
+        { answerText: "A tax deduction", isCorrect: false },
+        { answerText: "A portion of the home price paid upfront", isCorrect: true },
+        { answerText: "A monthly mortgage payment", isCorrect: false },
+        { answerText: "A fee for insurance", isCorrect: false }
+      ]
+    }
+  ],
+  'Renting vs. Buying': [
+    {
+      questionText: "Which is generally a benefit of renting a home?",
+      answerOptions: [
+        { answerText: "Building equity", isCorrect: false },
+        { answerText: "Lower maintenance responsibilities", isCorrect: true },
+        { answerText: "Fixed mortgage payments", isCorrect: false },
+        { answerText: "Owning the property", isCorrect: false }
+      ]
+    },
+    {
+      questionText: "What is a key benefit of buying a home over renting?",
+      answerOptions: [
+        { answerText: "More flexibility in moving", isCorrect: false },
+        { answerText: "Building equity", isCorrect: true },
+        { answerText: "No upfront costs", isCorrect: false },
+        { answerText: "Lower initial costs", isCorrect: false }
+      ]
+    }
+  ]
+};
+
+
+const QuizModal: React.FC<QuizModalProps> = ({ isOpen, onClose, topic }) => {
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showScore, setShowScore] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+
+  const questions: Question[] = quizzes[topic.name] || [];
+
+  const handleAnswerOptionClick = (index: number, isCorrect: boolean) => {
+    setSelectedAnswer(index);
+    setIsCorrect(isCorrect);
+
+    setTimeout(() => {
+      if (isCorrect) {
+        setScore(score + 1);
+      }
+
+      const nextQuestion = currentQuestion + 1;
+      if (nextQuestion < questions.length) {
+        setCurrentQuestion(nextQuestion);
+        setSelectedAnswer(null);
+        setIsCorrect(null);
+      } else {
+        setShowScore(true);
+      }
+    }, 1000);
+  };
+
+  const resetQuiz = () => {
+    setCurrentQuestion(0);
+    setScore(0);
+    setShowScore(false);
+    setSelectedAnswer(null);
+    setIsCorrect(null);
+  };
+
+  if (questions.length === 0) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold">Quiz Not Available</DialogTitle>
+          </DialogHeader>
+          <div className="text-center text-lg">
+            Sorry, the quiz for {topic.name} is not available at the moment.
+          </div>
+          <div className="mt-6">
+            <Button onClick={onClose} className="w-full">Close</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[550px]">
+        <DialogHeader>
+          <DialogTitle className="text-2xl font-bold">{topic.name} Quiz</DialogTitle>
+        </DialogHeader>
+        {showScore ? (
+          <div className="text-center py-8">
+            <h2 className="text-3xl font-bold mb-4">Quiz Completed!</h2>
+            <p className="text-2xl mb-6">You scored {score} out of {questions.length}</p>
+            <Button onClick={resetQuiz} className="px-6 py-3 text-lg">Retry Quiz</Button>
+          </div>
+        ) : (
+          <div className="py-4">
+            <div className="mb-6 flex justify-between items-center">
+              <span className="text-xl font-semibold">Question {currentQuestion + 1}/{questions.length}</span>
+              <span className="text-lg">Score: {score}</span>
+            </div>
+            <div className="mb-8 text-xl">{questions[currentQuestion].questionText}</div>
+            <div className="space-y-4">
+              {questions[currentQuestion].answerOptions.map((answerOption, index) => (
+                <Button
+                  key={index}
+                  onClick={() => handleAnswerOptionClick(index, answerOption.isCorrect)}
+                  className={`w-full text-left justify-start text-lg p-4 ${
+                    selectedAnswer === index
+                      ? answerOption.isCorrect
+                        ? 'bg-green-500 hover:bg-green-600'
+                        : 'bg-red-500 hover:bg-red-600'
+                      : 'bg-gray-200 hover:bg-gray-300'
+                  } ${selectedAnswer !== null ? 'cursor-not-allowed' : ''}`}
+                  disabled={selectedAnswer !== null}
+                >
+                  <span className="mr-2">{String.fromCharCode(65 + index)}.</span>
+                  {answerOption.answerText}
+                  {selectedAnswer === index && (
+                    <span className="ml-auto">
+                      {answerOption.isCorrect ? (
+                        <CheckCircle className="text-white" size={24} />
+                      ) : (
+                        <XCircle className="text-white" size={24} />
+                      )}
+                    </span>
+                  )}
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 const Roadmap: React.FC = () => {
   const [hoveredTopic, setHoveredTopic] = useState<Topic | null>(null);
+  const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
+
+  const handleTopicClick = (topic: Topic) => {
+    setSelectedTopic(topic);
+  };
 
   return (
     <div className="min-h-screen bg-[#F9EFCC] overflow-x-hidden relative">
@@ -230,6 +653,7 @@ const Roadmap: React.FC = () => {
               style={{ left: `calc(50% + ${topic.x - 500}px)`, top: `${topic.y}px` }}
               onMouseEnter={() => setHoveredTopic(topic)}
               onMouseLeave={() => setHoveredTopic(null)}
+              onClick={() => handleTopicClick(topic)}
             >
               {topic.name}
             </div>
@@ -248,6 +672,14 @@ const Roadmap: React.FC = () => {
               <h3 className="text-xl font-semibold mb-2">{hoveredTopic.name}</h3>
               <p className="text-sm">{hoveredTopic.des}</p>
             </div>
+          )}
+
+          {selectedTopic && (
+            <QuizModal
+              isOpen={!!selectedTopic}
+              onClose={() => setSelectedTopic(null)}
+              topic={selectedTopic}
+            />
           )}
         </div>
       </div>
