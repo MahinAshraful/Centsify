@@ -4,14 +4,12 @@ import { Navigate, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 
 const Signup: React.FC = () => {
-
   const { isAuthenticated } = useAuth0();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    name: '',
+    username: '',  // Added username
     email: '',
     password: '',
-    confirmPassword: ''
   });
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
@@ -29,14 +27,14 @@ const Signup: React.FC = () => {
   };
 
   const validateForm = () => {
-    if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
+    if (!formData.username || !formData.email || !formData.password) {
       setError('All fields are required');
       return false;
     }
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      return false;
-    }
+    // if (formData.password !== formData.confirmPassword) {
+    //   setError('Passwords do not match');
+    //   return false;
+    // }
     if (formData.password.length < 8) {
       setError('Password must be at least 8 characters long');
       return false;
@@ -55,46 +53,23 @@ const Signup: React.FC = () => {
     }
 
     try {
-      // First, get an access token
-      const tokenResponse = await axios.post(`/auth0/oauth/token`, {
-        client_id: import.meta.env.VITE_AUTH0_CLIENT_ID,
-        client_secret: import.meta.env.VITE_AUTH0_CLIENT_SECRET,
-        audience: `https://${import.meta.env.VITE_AUTH0_DOMAIN}/api/v2/`,
-        grant_type: 'client_credentials'
-      });
-
-      const accessToken = tokenResponse.data.access_token;
-
-      // Now use the access token to create the user
-      const response = await axios.post(`/auth0/api/v2/users`, {
+      // Send the signup data to the Flask API
+      const dbSignupUrl = `${import.meta.env.VITE_API_URL}/api/register`;
+      const response = await axios.post(dbSignupUrl, {
+        username: formData.username,  // Include username
         email: formData.email,
-        password: formData.password,
-        connection: 'Username-Password-Authentication',
-        name: formData.name,
-        verify_email: true
-      }, {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
-        }
+        password: formData.password
       });
 
       console.log('Signup response:', response.data);
 
-      // If Auth0 signup is successful, create user in your database
-      const dbSignupUrl = `${import.meta.env.VITE_API_URL}/api/signup`;
-      await axios.post(dbSignupUrl, {
-        auth0Id: response.data.user_id,
-        name: formData.name,
-        email: formData.email
-      });
-
-      navigate('/login', { state: { message: 'Signup successful! Please check your email to verify your account before logging in.' } });
+      // Redirect user to login page after successful signup
+      navigate('/login', { state: { message: 'Signup successful! Please log in.' } });
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.error('Axios error:', error.response?.data || error.message);
         if (error.response) {
-          setError(`Error: ${error.response.data.error || error.response.data.description || error.message}`);
+          setError(`Error: ${error.response.data.message || error.response.data.errors.join(', ') || error.message}`);
         } else if (error.request) {
           setError('No response received from the server. Please try again.');
         } else {
@@ -118,15 +93,15 @@ const Signup: React.FC = () => {
         <form className="mt-8 space-y-6" onSubmit={handleSignup}>
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
-              <label htmlFor="name" className="sr-only">Full Name</label>
+              <label htmlFor="username" className="sr-only">Username</label>
               <input
-                id="name"
-                name="name"
+                id="username"
+                name="username"
                 type="text"
                 required
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Full Name"
-                value={formData.name}
+                placeholder="Username"
+                value={formData.username}
                 onChange={handleChange}
               />
             </div>
@@ -158,7 +133,7 @@ const Signup: React.FC = () => {
                 onChange={handleChange}
               />
             </div>
-            <div>
+            {/* <div>
               <label htmlFor="confirmPassword" className="sr-only">Confirm Password</label>
               <input
                 id="confirmPassword"
@@ -166,12 +141,12 @@ const Signup: React.FC = () => {
                 type="password"
                 autoComplete="new-password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                 placeholder="Confirm Password"
                 value={formData.confirmPassword}
                 onChange={handleChange}
               />
-            </div>
+            </div> */}
           </div>
 
           {error && <p className="text-red-500 text-sm text-center">{error}</p>}
