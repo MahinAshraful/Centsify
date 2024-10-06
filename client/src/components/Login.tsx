@@ -47,6 +47,7 @@ const Login: React.FC = () => {
 
   return (
     <div className="landing-page">
+      <img src="src/assets/centsify.png" alt="Centsify Logo" className="w-80 h-30 m-auto" />
       <div className="hero-section">
         <h1 className="hero-title">Welcome to Centsify</h1>
         <p className="hero-subtitle">Gamifying financial literacy to empower your future</p>
