@@ -387,3 +387,40 @@ body{
         font-size: 1.75rem;
     }
 }
+
+.who-we-are-section {
+    padding: 80px 20px;
+    background-color: #fff3e0;
+}
+
+.who-we-are-content {
+    max-width: 1000px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.who-we-are-title {
+    font-size: 2.5rem;
+    color: #6d4c41;
+    margin-bottom: 30px;
+}
+
+.who-we-are-description {
+    font-size: 1.5rem;
+    line-height: 1.6;
+    color: #5d4037;
+}
+
+@media (max-width: 768px) {
+    .who-we-are-section {
+        padding: 60px 15px;
+    }
+
+    .who-we-are-title {
+        font-size: 2rem;
+    }
+
+    .who-we-are-description {
+        font-size: 1.25rem;
+    }
+}

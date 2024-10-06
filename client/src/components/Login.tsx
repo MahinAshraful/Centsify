@@ -28,11 +28,13 @@ const Login: React.FC = () => {
         </button>
       </div>
 
-      <div className="section">
-        <h2 className="section-title">Who We Are</h2>
-        <p className="text-center max-w-2xl mx-auto">
-          Centsify is an innovative tool that transforms financial education into an engaging and interactive experience. We believe that understanding money shouldn't be a chore, but an exciting journey of discovery and growth.
-        </p>
+        <div className="who-we-are-section">
+        <div className="who-we-are-content">
+          <h2 className="who-we-are-title">Who We Are</h2>
+          <p className="who-we-are-description">
+            Centsify is an innovative tool that transforms financial education into an engaging and interactive experience. We believe that understanding money shouldn't be a chore, but an exciting journey of discovery and growth.
+          </p>
+        </div>
       </div>
 
       <div className="section bg-white">
@@ -106,7 +108,7 @@ const Login: React.FC = () => {
       </div>
 
       <footer className="footer">
-        <p>&copy; 2023 Centsify. All rights reserved.</p>
+        <p>&copy; 2024 Centsify. All rights reserved.</p>
       </footer>
     </div>
   );
