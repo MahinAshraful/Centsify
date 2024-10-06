@@ -1,8 +1,22 @@
-import { useState } from 'react';
-import { TrendingUp, HelpCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { TrendingUp, MessageSquare, TrendingUpIcon } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
+// Type definitions
+type Topic = {
+  id: number;
+  name: string;
+  color: string;
+  x: number;
+  y: number;
+  des: string;
+};
 
-const colorMap: { [key: string]: string } = {
+type ColorMap = {
+  [key: string]: string;
+};
+
+const colorMap: ColorMap = {
   'bg-green-400': 'bg-green-200',
   'bg-green-700': 'bg-green-500',
   'bg-yellow-500': 'bg-yellow-300',
@@ -21,7 +35,7 @@ const colorMap: { [key: string]: string } = {
   'bg-black': 'bg-gray-400',
 };
 
-const topics = [
+const topics: Topic[] = [
   { 
     id: 1, 
     name: 'Budgeting', 
@@ -152,14 +166,29 @@ const topics = [
   }
 ];
 
-
-const Roadmap = () => {
-  const [hoveredTopic, setHoveredTopic] = useState<{ id: number; name: string; color: string; x: number; y: number; des: string } | null>(null);
+const Roadmap: React.FC = () => {
+  const [hoveredTopic, setHoveredTopic] = useState<Topic | null>(null);
 
   return (
-    <div className="absolute inset-0 bg-[#F9EFCC] overflow-auto">
-      <div className="p-4 min-h-full w-full relative">
-        <header className="flex justify-between items-center mb-6">
+    <div className="min-h-screen bg-[#F9EFCC] overflow-x-hidden relative">
+      {/* Fixed Sidebar Boxes */}
+      <div className="fixed left-4 bottom-4 w-64 space-y-4 z-20">
+        <Link to="/chat" className="block">
+          <div className="bg-green-600 text-white p-6 rounded-lg shadow-lg hover:bg-green-700 transition-colors">
+            <MessageSquare size={32} className="mb-2" />
+            <h2 className="text-xl font-bold">Chat to our AI assistant</h2>
+          </div>
+        </Link>
+        <Link to="/papertrade" className="block">
+          <div className="bg-blue-600 text-white p-6 rounded-lg shadow-lg hover:bg-blue-700 transition-colors">
+            <TrendingUpIcon size={32} className="mb-2" />
+            <h2 className="text-xl font-bold">Try our paper trading simulator</h2>
+          </div>
+        </Link>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pl-72">
+        <header className="flex justify-between items-center py-6">
           <div className="flex items-center">
             <div className="bg-green-700 text-white rounded-full p-3 mr-2">
               <TrendingUp size={32} />
@@ -167,7 +196,7 @@ const Roadmap = () => {
             <h1 className="text-3xl font-bold text-gray-800">Centsify</h1>
           </div>
           <div className="flex items-center">
-            <p className="mr-4 text-purple-700 text-3xl">Hello, Tanvir</p>
+            <p className="mr-4 text-purple-700 text-3xl">Hello, Mahin</p>
             <div className="bg-gray-200 rounded-full px-4 py-2 flex items-center">
               <span className="mr-2 text-gray-700 text-lg">Level 1</span>
               <div className="w-20 h-3 bg-gray-300 rounded-full">
@@ -177,8 +206,8 @@ const Roadmap = () => {
           </div>
         </header>
 
-        <div className="relative h-[3300px]">
-          <svg className="absolute top-0 left-0 w-full h-full" style={{ zIndex: 0 }}>
+        <div className="relative w-full" style={{ height: '3300px' }}>
+          <svg className="absolute top-0 left-1/2 transform -translate-x-1/2 w-full h-full" style={{ maxWidth: '1000px' }}>
             {topics.slice(0, -1).map((topic, index) => {
               const nextTopic = topics[index + 1];
               const midX = (topic.x + nextTopic.x) / 2;
@@ -198,7 +227,7 @@ const Roadmap = () => {
             <div 
               key={topic.id} 
               className={`absolute ${topic.color} text-white w-[20rem] h-[10rem] text-4xl flex justify-center items-center rounded-full py-3 px-6 text-center cursor-pointer p-4`} 
-              style={{ left: `${topic.x}px`, top: `${topic.y}px`, zIndex: 1 }}
+              style={{ left: `calc(50% + ${topic.x - 500}px)`, top: `${topic.y}px` }}
               onMouseEnter={() => setHoveredTopic(topic)}
               onMouseLeave={() => setHoveredTopic(null)}
             >
@@ -206,12 +235,11 @@ const Roadmap = () => {
             </div>
           ))}
 
-          {}
           {hoveredTopic && (
             <div
               className={`absolute p-4 rounded-lg shadow-lg text-gray-800 border border-gray-200 ${colorMap[hoveredTopic.color] || 'bg-gray-200'}`} 
               style={{
-                left: hoveredTopic.x > 400 ? hoveredTopic.x - 250 : hoveredTopic.x + 150, 
+                left: `calc(50% + ${hoveredTopic.x > 400 ? hoveredTopic.x - 750 : hoveredTopic.x - 350}px)`,
                 top: hoveredTopic.y + 20, 
                 zIndex: 10,
                 maxWidth: '250px',
@@ -221,18 +249,6 @@ const Roadmap = () => {
               <p className="text-sm">{hoveredTopic.des}</p>
             </div>
           )}
-        </div>
-
-        <div className="fixed bottom-8 right-8 flex flex-col items-end">
-          <div className="bg-black text-white rounded-lg p-4 mb-4 w-24 h-24 flex flex-col items-center justify-center">
-            <TrendingUp size={36} />
-            <span className="block text-sm mt-2">Paper Trading</span>
-          </div>
-          <div className="bg-black text-white rounded-full p-4 w-24 h-24 flex flex-col items-center justify-center relative">
-            <HelpCircle size={36} />
-            <span className="absolute -top-2 -right-2 bg-white text-black text-lg font-bold rounded-full w-8 h-8 flex items-center justify-center">?</span>
-            <span className="block text-sm mt-2">Help</span>
-          </div>
         </div>
       </div>
     </div>

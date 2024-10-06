@@ -155,7 +155,7 @@ export default function PaperTrader() {
           </h3>
           {showChart ? (
             <div className="chart-placeholder">
-              Portfolio performance chart coming soon!
+              Portfolio performance chart closed
             </div>
           ) : (
             <ul className="portfolio-list">
