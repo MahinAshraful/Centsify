@@ -1,21 +1,48 @@
-import React, { useRef } from 'react';
-import { useAuth0 } from '@auth0/auth0-react';
+import React, { useRef, useState } from 'react';
 import { Navigate, Link, useLocation } from 'react-router-dom';
 import { DollarSign, TrendingUp, MessageCircle, BookOpen, Award, Users } from 'lucide-react';
 import './login.css';
 
 const Login: React.FC = () => {
-  const { loginWithRedirect, isAuthenticated } = useAuth0();
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const location = useLocation();
   const message = location.state?.message;
   const loginSectionRef = useRef<HTMLDivElement>(null);
 
-  if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
+  if (isLoggedIn) {
+    return <Navigate to="/roadmap" replace />;
   }
 
   const scrollToLogin = () => {
     loginSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Store the token in localStorage or a secure storage method
+        localStorage.setItem('token', data.access_token);
+        setIsLoggedIn(true);
+      } else {
+        const errorData = await response.json();
+        setError(errorData.message || 'Login failed');
+      }
+    } catch (error) {
+      setError('An error occurred. Please try again.');
+    }
   };
 
   return (
@@ -92,12 +119,32 @@ const Login: React.FC = () => {
               {message}
             </p>
           )}
-          <button
-            onClick={() => loginWithRedirect()}
-            className="login-button"
-          >
-            Sign in with Auth0
-          </button>
+          {error && (
+            <p className="error-message">
+              {error}
+            </p>
+          )}
+          <form onSubmit={handleLogin} className="login-form">
+            <input
+              type="text"
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="login-input"
+              required
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="login-input"
+              required
+            />
+            <button type="submit" className="login-button">
+              Log In
+            </button>
+          </form>
           <p className="signup-text">
             Don't have an account?{' '}
             <Link to="/signup" className="signup-link">
@@ -114,4 +161,4 @@ const Login: React.FC = () => {
   );
 };
 
-export default Login;
+export default Login
