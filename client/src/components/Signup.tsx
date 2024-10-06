@@ -85,13 +85,11 @@ const Signup: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">Create your account</h2>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSignup}>
-          <div className="rounded-md shadow-sm -space-y-px">
+    <div className="min-h-screen flex items-center justify-center bg-[#f5e6d3] py-12">
+      <div className="bg-[#fff3e0] rounded-lg shadow-md max-w-md w-full p-8">
+        <h2 className="text-3xl font-extrabold text-[#6d4c41] text-center mb-6">Create your account</h2>
+        <form className="space-y-6" onSubmit={handleSignup}>
+          <div className="space-y-4">
             <div>
               <label htmlFor="username" className="sr-only">Username</label>
               <input
@@ -99,7 +97,7 @@ const Signup: React.FC = () => {
                 name="username"
                 type="text"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="w-full px-4 py-2 border border-grey-500 rounded-md bg-white text-gray-900"
                 placeholder="Username"
                 value={formData.username}
                 onChange={handleChange}
@@ -113,7 +111,7 @@ const Signup: React.FC = () => {
                 type="email"
                 autoComplete="email"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="w-full px-4 py-2 border border-grey-500 rounded-md bg-white text-gray-900"
                 placeholder="Email address"
                 value={formData.email}
                 onChange={handleChange}
@@ -127,26 +125,12 @@ const Signup: React.FC = () => {
                 type="password"
                 autoComplete="new-password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="w-full px-4 py-2 border border-grey-500 rounded-md bg-white text-gray-900"
                 placeholder="Password"
                 value={formData.password}
                 onChange={handleChange}
               />
             </div>
-            {/* <div>
-              <label htmlFor="confirmPassword" className="sr-only">Confirm Password</label>
-              <input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                autoComplete="new-password"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Confirm Password"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-              />
-            </div> */}
           </div>
 
           {error && <p className="text-red-500 text-sm text-center">{error}</p>}
@@ -155,7 +139,7 @@ const Signup: React.FC = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+              className="w-full py-3 bg-[#a1887f] text-[#fff3e0] font-semibold rounded-md hover:bg-[#8d6e63] transition-colors"
             >
               {isLoading ? 'Signing up...' : 'Sign up'}
             </button>
@@ -164,7 +148,7 @@ const Signup: React.FC = () => {
 
         <p className="mt-2 text-center text-sm text-gray-600">
           Already have an account?{' '}
-          <Link to="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
+          <Link to="/login" className="font-medium text-[#8d6e63] hover:text-[  #6d4c41]">
             Log in
           </Link>
         </p>
