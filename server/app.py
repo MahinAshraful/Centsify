@@ -119,5 +119,17 @@ def update_user():
         return jsonify({"message": "User updated successfully"}), 200
     return jsonify({"message": "User not found"}), 404
 
+@app.route('/api/delete_user', methods=['DELETE'])
+def delete_user():
+    user_data = request.json  # Expecting user email or username in request
+
+    users_collection = atlas_client.get_collection('info')
+    result = users_collection.delete_one({'email': user_data['email']})
+
+    if result.deleted_count > 0:
+        return jsonify({"message": "User deleted successfully"}), 200
+    else:
+        return jsonify({"message": "User not found"}), 404
+
 if __name__ == '__main__':
     app.run(debug=True)
