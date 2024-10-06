@@ -1,5 +1,5 @@
 from functools import wraps
-from flask import request, _request_ctx_stack
+from flask import request, current_app
 from jose import jwt
 from urllib.request import urlopen
 import json
@@ -21,7 +21,6 @@ def get_token_auth_header():
                          "description": "Authorization header is expected"}, 401)
 
     parts = auth.split()
-
     if parts[0].lower() != "bearer":
         raise AuthError({"code": "invalid_header",
                          "description": "Authorization header must start with Bearer"}, 401)
@@ -66,13 +65,14 @@ def requires_auth(f):
             except jwt.JWTClaimsError:
                 raise AuthError({"code": "invalid_claims",
                                  "description":
-                                 "incorrect claims, please check the audience and issuer"}, 401)
+                                     "incorrect claims, please check the audience and issuer"}, 401)
             except Exception:
                 raise AuthError({"code": "invalid_header",
                                  "description":
-                                 "Unable to parse authentication token."}, 401)
+                                     "Unable to parse authentication token."}, 401)
 
-            _request_ctx_stack.top.current_user = payload
+            # Store the payload in the current request context
+            current_app.ensure_sync(request)._auth_payload = payload
             return f(*args, **kwargs)
         raise AuthError({"code": "invalid_header",
                          "description": "Unable to find appropriate key"}, 401)
