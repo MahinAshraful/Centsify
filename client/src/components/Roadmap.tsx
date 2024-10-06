@@ -3,7 +3,7 @@ import { TrendingUp, MessageSquare, TrendingUpIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button, } from './ui/button';
 import { Dialog, DialogFooter, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
-import { CheckCircle, XCircle } from 'lucide-react';
+import { CheckCircle, XCircle, X } from 'lucide-react';
 
 type Topic = {
   id: number;
@@ -518,11 +518,10 @@ const QuizModal: React.FC<QuizModalProps> = ({ isOpen, onClose, topic, onQuizCom
     setIsCorrect(null);
   };
 
-
   if (questions.length === 0) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px] bg-[#F9EFCC] text-[#1A1A1A]">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold">Quiz Not Available</DialogTitle>
           </DialogHeader>
@@ -530,7 +529,7 @@ const QuizModal: React.FC<QuizModalProps> = ({ isOpen, onClose, topic, onQuizCom
             Sorry, the quiz for {topic.name} is not available at the moment.
           </div>
           <div className="mt-6">
-            <Button onClick={onClose} className="w-full">Close</Button>
+            <Button onClick={onClose} className="w-full bg-green-600 hover:bg-green-700 text-white">Close</Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -539,34 +538,42 @@ const QuizModal: React.FC<QuizModalProps> = ({ isOpen, onClose, topic, onQuizCom
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[550px]">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-bold">{topic.name} Quiz</DialogTitle>
+      <DialogContent className="sm:max-w-[550px] bg-[#F9EFCC] text-[#1A1A1A] p-0 overflow-hidden">
+        <DialogHeader className="bg-green-600 text-white p-6 relative">
+          <DialogTitle className="text-3xl font-bold">{topic.name} Quiz</DialogTitle>
+          <Button 
+            onClick={onClose} 
+            className="absolute top-2 right-2 text-white hover:bg-green-700 rounded-full p-2"
+          >
+            <X size={24} />
+          </Button>
         </DialogHeader>
         {showScore ? (
           <div className="text-center py-8">
             <h2 className="text-3xl font-bold mb-4">Quiz Completed!</h2>
             <p className="text-2xl mb-6">You scored {score} out of {questions.length}</p>
-            <Button onClick={resetQuiz} className="px-6 py-3 text-lg">Retry Quiz</Button>
+            <Button onClick={resetQuiz} className="px-6 py-3 text-lg bg-green-600 hover:bg-green-700 text-white">
+              Retry Quiz
+            </Button>
           </div>
         ) : (
-          <div className="py-4">
+          <div className="p-6">
             <div className="mb-6 flex justify-between items-center">
               <span className="text-xl font-semibold">Question {currentQuestion + 1}/{questions.length}</span>
               <span className="text-lg">Score: {score}</span>
             </div>
-            <div className="mb-8 text-xl">{questions[currentQuestion].questionText}</div>
+            <div className="mb-8 text-2xl font-bold">{questions[currentQuestion].questionText}</div>
             <div className="space-y-4">
               {questions[currentQuestion].answerOptions.map((answerOption, index) => (
                 <Button
                   key={index}
                   onClick={() => handleAnswerOptionClick(index, answerOption.isCorrect)}
-                  className={`w-full text-left justify-start text-lg p-4 ${
+                  className={`w-full text-left justify-start text-lg p-4 rounded-lg transition-colors ${
                     selectedAnswer === index
                       ? answerOption.isCorrect
-                        ? 'bg-green-500 hover:bg-green-600'
-                        : 'bg-red-500 hover:bg-red-600'
-                      : 'bg-gray-200 hover:bg-gray-300'
+                        ? 'bg-green-500 hover:bg-green-600 text-white'
+                        : 'bg-red-500 hover:bg-red-600 text-white'
+                      : 'bg-white hover:bg-gray-100 text-[#1A1A1A] border border-gray-300'
                   } ${selectedAnswer !== null ? 'cursor-not-allowed' : ''}`}
                   disabled={selectedAnswer !== null}
                 >
