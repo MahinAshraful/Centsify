@@ -1,50 +1,53 @@
-# React + TypeScript + Vite
+# Centsify
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Centsify is a gamified financial literacy app designed to empower users with essential financial knowledge through an engaging and interactive roadmap. Centsify helps users navigate important financial topics, making learning about personal finance accessible and fun.
 
-Currently, two official plugins are available:
+## Video Walkthrough
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+<img src="src/assets/Centsify (online-video-cutter.com).gif" width="" alt="Video Walkthrough">
 
-## Expanding the ESLint configuration
+## Features
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+- **Gamification**: Earn experience points (XP) and level up as users progress through topics, enhancing motivation and engagement.
+- **Interactive Roadmap**: A visually appealing roadmap that guides users through various financial topics and subtopics.
+- **Paper Trading**: Users can practice trading stocks and managing investments within the app without financial risk.
+- **AI Interaction**: Speak to an AI assistant that provides instant feedback and answers to financial questions.
+- **Progress Tracking**: Users can track their progress and understand areas for improvement.
 
-- Configure the top-level `parserOptions` property like this:
+## Problem Statement
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+According to the World Economic Forum, financial literacy in the US hovers around 50%, with similar underperformance in the EU. Many students are not taught essential financial topics in school, leading to a lack of preparedness for real-life financial decisions. This gap in education results in poor financial choices, increased debt, and a general lack of confidence in managing personal finances.
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+## Solution
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+Centsify addresses these issues by creating a gamified financial literacy roadmap where users can:
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+- **Level Up**: Earn experience points (XP) as they complete topics and progress through the roadmap.
+- **Interactive Features**: Engage with paper trading and interact with an AI that can answer financial queries and offer guidance.
+- **AI-powered interactions**: Users can coversate with the AI using their voice.
+
+## Technology Stack
+
+- **Frontend**: React, Tailwind CSS
+- **Backend**: Python, Flask
+- **Database**: MongoDB Atlas
+- **Authentication**: MongoDB authentication
+- **AI Integration**: GeminiAI API for conversational AI features
+
+## Usage
+
+1. **User Authentication**: Users can create an account or log in to access their personalized learning paths.
+2. **Explore Topics**: Users navigate through the interactive roadmap, selecting topics to learn about personal finance.
+3. **Engage with Features**: Participate in paper trading and interact with the AI assistant for personalized guidance.
+
+## Future Iterations
+
+For future updates, we plan to:
+
+- Personalize learning paths based on individual user needs.
+- Group topics with subtopics categorized as beginner, intermediate, and expert.
+- Introduce community features for user interaction and support.
+- Integrate real financial tools for enhanced user engagement.
+- Provide advanced analytics to track learning patterns and progress.
+- Regularly update content to reflect current financial trends and practices.
+- Add multilingual support to reach a broader audience.
