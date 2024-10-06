@@ -4,7 +4,7 @@ Centsify is a gamified financial literacy app designed to empower users with ess
 
 ## Video Walkthrough
 
-<img src="src/assets/Centsify (online-video-cutter.com).gif" width="" alt="Video Walkthrough">
+<img src="client/src/assets/Centsify (online-video-cutter.com).gif" width="" alt="Video Walkthrough">
 
 ## Features
 
