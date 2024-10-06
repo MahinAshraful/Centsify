@@ -4,6 +4,7 @@ import { Navigate, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 
 const Signup: React.FC = () => {
+
   const { isAuthenticated } = useAuth0();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -46,34 +47,63 @@ const Signup: React.FC = () => {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
 
     if (!validateForm()) {
+      setIsLoading(false);
       return;
     }
 
-    setIsLoading(true);
-
     try {
-      const response = await axios.post(`https://${import.meta.env.VITE_AUTH0_DOMAIN}/dbconnections/signup`, {
+      // First, get an access token
+      const tokenResponse = await axios.post(`/auth0/oauth/token`, {
         client_id: import.meta.env.VITE_AUTH0_CLIENT_ID,
+        client_secret: import.meta.env.VITE_AUTH0_CLIENT_SECRET,
+        audience: `https://${import.meta.env.VITE_AUTH0_DOMAIN}/api/v2/`,
+        grant_type: 'client_credentials'
+      });
+
+      const accessToken = tokenResponse.data.access_token;
+
+      // Now use the access token to create the user
+      const response = await axios.post(`/auth0/api/v2/users`, {
         email: formData.email,
         password: formData.password,
         connection: 'Username-Password-Authentication',
-        name: formData.name
+        name: formData.name,
+        verify_email: true
+      }, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        }
       });
 
-      if (response.data.email_verified) {
-        navigate('/login', { state: { message: 'Signup successful! Please log in.' } });
-      } else {
-        setError('Please check your email to verify your account before logging in.');
-      }
+      console.log('Signup response:', response.data);
+
+      // If Auth0 signup is successful, create user in your database
+      const dbSignupUrl = `${import.meta.env.VITE_API_URL}/api/signup`;
+      await axios.post(dbSignupUrl, {
+        auth0Id: response.data.user_id,
+        name: formData.name,
+        email: formData.email
+      });
+
+      navigate('/login', { state: { message: 'Signup successful! Please check your email to verify your account before logging in.' } });
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
-        setError(error.response.data.description || 'An error occurred during signup. Please try again.');
+      if (axios.isAxiosError(error)) {
+        console.error('Axios error:', error.response?.data || error.message);
+        if (error.response) {
+          setError(`Error: ${error.response.data.error || error.response.data.description || error.message}`);
+        } else if (error.request) {
+          setError('No response received from the server. Please try again.');
+        } else {
+          setError(`Error: ${error.message}`);
+        }
       } else {
+        console.error('Non-Axios error:', error);
         setError('An unexpected error occurred. Please try again later.');
       }
-      console.error('Signup error:', error);
     } finally {
       setIsLoading(false);
     }
