@@ -59,10 +59,11 @@ def register_user():
     
     hashed_password = generate_password_hash(user_data['password'])
     new_user = {
-        '_id': user_id,  # Store the generated user_id
+        '_id': user_id,
         'username': user_data['username'],
         'email': user_data['email'],
-        'password': hashed_password
+        'password': hashed_password,
+        'level' : 1
     }
 
     new_user_id = atlas_client.insert_one('info', new_user)
